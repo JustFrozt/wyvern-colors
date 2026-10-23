@@ -1,0 +1,12 @@
+{
+  "assets/wyverncolors/items/flute.json": "be45957ad436e0bf7a996c07d4ae2439da1c3bd2ec00c726830b508a9bf66abc",
+  "assets/wyverncolors/items/saddle.json": "e6bb9202ed42dd1ca0c757d70501fe264730881dd0d4b83a67c3d5bdb0b47bc1",
+  "assets/wyverncolors/items/saddle_mystic.json": "95d7741a722a5d9d5240c8875588ed15186512bbadd8c0189570dc16902c4a2d",
+  "assets/wyverncolors/items/saddle_mystic_swapped.json": "fdbf548157b737bd3ca079a13cc7f776080813c517271b75037fa5977c3165fa",
+  "assets/wyverncolors/items/saddle_swapped.json": "d2eee3a658372c8e26ac6a2517cd339cef206a511c921d30ce62358bf9251aae",
+  "assets/wyverncolors/models/item/flute.json": "ab4fff7a52562c1917344e400dc6a6be786d4bbccc1febc762a54142ec73f8a7",
+  "assets/wyverncolors/models/item/saddle.json": "1ea7bb460c940041f77b791d0457771eb19d6f1b9bd9da2b883573ad653c34e3",
+  "assets/wyverncolors/models/item/saddle_swapped.json": "f2025e368a55c810747834f36edb78ddf414bfc5e925b6eb134f2e4ff8a0d26c",
+  "assets/wyverncolors/models/item/sparkles.json": "689e8b9ebab88c2828b3f7e1b544fe9fc33bbb67bce474af3cfc6923390322c7",
+  "assets/wyverncolors/textures/item/white.png": "1e62ec5b106dab85d2dce19f55261a84c778ae53aafe343a3f6bd9cb2b7e1cd4"
+}

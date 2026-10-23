@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "wyverncolors",
+  "version": "${version}",
+  "name": "Wyvern Colors",
+  "icon": "assets/wyverncolors/icon.png",
+  "authors": [
+    "JustFrozt"
+  ],
+  "description": "Shows your Wynncraft wyvern's scale and horn colors on reins and flutes.",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.justfrozt.wyverncolors.WyvernColorsClient"
+    ],
+    "modmenu": [
+      "dev.justfrozt.wyverncolors.config.WyvernModMenu"
+    ]
+  },
+  "license": "MIT",
+  "mixins": [
+    "wyverncolors.mixins.json",
+    "wyverncolors.wynntils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.18.6",
+    "minecraft": "1.21.11",
+    "java": ">=21"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "wynntils": "*"
+  }
+}

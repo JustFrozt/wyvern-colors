@@ -1,0 +1,162 @@
+// Each loader compiles the same renderer in its own mapped Minecraft workspace.
+def sourceRoot = file('../..')
+def releaseProperties = new Properties()
+new File(sourceRoot, 'gradle.properties').withInputStream { releaseProperties.load(it) }
+def platform = project.property('loom.platform')
+def neo = platform == 'neoforge'
+version = releaseProperties.mod_version
+group = releaseProperties.maven_group
+base { archivesName = "wyvern-colors-${platform}-1.21.11" }
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.neoforged.net/releases/' }
+    maven { url = 'https://maven.minecraftforge.net/' }
+    if (neo) {
+        exclusiveContent {
+            forRepository {
+                ivy {
+                    name = 'WynntilsNeoForgeRelease'
+                    url = 'https://cdn.modrinth.com/data/dU5Gb9Ab/versions/'
+                    patternLayout {
+                        artifact '[revision]/wynntils-4.2.16-neoforge+MC-1.21.11(-[classifier]).[ext]'
+                    }
+                    metadataSources { artifact() }
+                }
+            }
+            filter { includeGroup 'maven.modrinth' }
+        }
+    }
+}
+
+def sharedJava = layout.buildDirectory.dir('generated/shared-java')
+def generateSharedJava = tasks.register('generateSharedJava', Sync) {
+    inputs.property 'loaderPlatform', platform
+    inputs.file file('../loaders/build.gradle')
+    from(new File(sourceRoot, 'src/main/java')) {
+        exclude '**/WyvernColorsClient.java', '**/LoaderPlatform.java', '**/WyvernModMenu.java'
+        if (neo) exclude '**/WynntilsMixinPlugin.java'
+        else exclude { element ->
+            def path = element.path
+            def standalone = ['BitmapDigitInk.java', 'GlyphInkRegistry.java',
+                'BitmapDigitSelectionMixin.java', 'BitmapDigitInkMixin.java', 'BakedGlyphRectAccessor.java']
+            (path.contains('/compat/') || path.contains('/mixin/wynntils/')) &&
+                !standalone.any { path.endsWith('/' + it) }
+        }
+    }
+    from(new File(sourceRoot, 'src/common/java'))
+    into sharedJava
+    filter { String line ->
+        def nativeSettings = 'dev.justfrozt.wyverncolors.config.NativePotentialSettings'
+        def updated = line.replace('"fabricloader", "wynntils", "modmenu"', "\"${platform}\", \"wynntils\"")
+            .replace('"screen.wyverncolors.potential.shared"', "${nativeSettings}.statusKey()")
+            .replace('"screen.wyverncolors.potential.unavailable"', neo
+                ? '"screen.wyverncolors.potential.unavailable"' : '"screen.wyverncolors.potential.nativeConflict"')
+            .replace('"config.wyverncolors.potentialFontSize.description"', "${nativeSettings}.fontDescriptionKey()")
+        if (updated.contains('if (settings != null) settings.set') ||
+                updated.contains('if (settings != null) settings.resetDefaults();')) {
+            updated += " showSaveResult(${nativeSettings}.saveSucceeded());"
+        }
+        updated.replace('Shared Wynntils potential-text settings attached', 'Potential-text settings attached')
+    }
+}
+
+sourceSets {
+    main {
+        java.srcDir(sharedJava)
+        java.srcDir('../loaders/src/main/java')
+        if (neo) java.srcDir('../loaders/src/neoforge/java')
+        resources.srcDir(new File(sourceRoot, 'src/main/resources'))
+        resources.exclude 'fabric.mod.json'
+        if (!neo) resources.exclude 'wyverncolors.wynntils.mixins.json'
+    }
+}
+tasks.named('compileJava') { dependsOn generateSharedJava }
+
+if (!neo) {
+    loom.forge {
+        mixinConfig 'wyverncolors.mixins.json'
+    }
+}
+
+dependencies {
+    minecraft 'com.mojang:minecraft:1.21.11'
+    // Keep loader-added method names distinct from the vanilla Yarn aliases.
+    mappings loom.layered {
+        mappings("net.fabricmc:yarn:${releaseProperties.yarn_mappings}:v2") {
+            containsUnpick()
+            containsAnnotations()
+        }
+        mappings(file("../loaders/${platform}-mappings.tiny"))
+    }
+    if (neo) {
+        neoForge 'net.neoforged:neoforge:21.11.48'
+        modCompileOnly 'maven.modrinth:wynntils:9InxDQyo'
+        if (!project.hasProperty('withoutWynntils')) modRuntimeOnly 'maven.modrinth:wynntils:9InxDQyo'
+    } else {
+        forge 'net.minecraftforge:forge:1.21.11-61.2.3'
+        compileOnly 'io.github.llamalad7:mixinextras-common:0.5.0'
+    }
+    annotationProcessor 'io.github.llamalad7:mixinextras-common:0.5.0'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.file file('../loaders/build.gradle')
+    filesMatching('META-INF/*.toml') { expand version: project.version }
+    doLast {
+        def baseMixins = new File(destinationDir, 'wyverncolors.mixins.json')
+        def mixins = new groovy.json.JsonSlurper().parse(baseMixins)
+        mixins.client += ['NativePotentialOverlayMixin', 'wynntils.BitmapDigitSelectionMixin',
+            'wynntils.BitmapDigitInkMixin', 'wynntils.BakedGlyphRectAccessor']
+        baseMixins.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(mixins)) + '\n'
+        if (neo) {
+            def optionalFile = new File(destinationDir, 'wyverncolors.wynntils.mixins.json')
+            def optional = new groovy.json.JsonSlurper().parse(optionalFile)
+            optional.client -= ['BitmapDigitSelectionMixin', 'BitmapDigitInkMixin', 'BakedGlyphRectAccessor']
+            optionalFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(optional)) + '\n'
+        }
+        def languageFile = new File(destinationDir, 'assets/wyverncolors/lang/en_us.json')
+        def language = new groovy.json.JsonSlurper().parse(languageFile)
+        language['screen.wyverncolors.potential.native'] = 'Text settings are saved by Wyvern Colors.'
+        language['screen.wyverncolors.potential.nativeConflict'] = 'Remove the installed Wynntils to use built-in text controls.'
+        language['config.wyverncolors.potentialFontSize.nativeDescription'] =
+            'Mount potential text size: 50–125%%. Default: 70%%. Long labels shrink to fit. Turn customization off to use the default layout.'
+        languageFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(language)) + '\n'
+    }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+    withSourcesJar()
+}
+tasks.named('sourcesJar') { dependsOn generateSharedJava }
+// Inspect every native Minecraft/Wynntils hook in this loader's mapped game,
+// including the standalone item-decoration and visible-glyph hooks.
+def compileMixinTargetCheck = tasks.register('compileMixinTargetCheck', JavaCompile) {
+    source = new File(sourceRoot, 'tools/MixinTargetCheck.java')
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/mixin-target-check')
+    options.release = 21
+}
+def verifyNativeMixinTargets = tasks.register('verifyNativeMixinTargets', JavaExec) {
+    dependsOn compileMixinTargetCheck, tasks.named('jar')
+    classpath = files(compileMixinTargetCheck.flatMap { it.destinationDirectory }) + sourceSets.main.compileClasspath
+    mainClass = 'MixinTargetCheck'
+    doFirst {
+        args = [tasks.named('jar').get().archiveFile.get().asFile.absolutePath] +
+            sourceSets.main.compileClasspath.files.findAll { it.name.endsWith('.jar') }.collect { it.absolutePath }
+    }
+}
+tasks.named('check') { dependsOn verifyNativeMixinTargets }
+jar {
+    from(new File(sourceRoot, 'LICENSE')) { rename { 'LICENSE_wyvern-colors' } }
+    from(new File(sourceRoot, 'NOTICE')) { rename { 'NOTICE_wyvern-colors' } }
+}

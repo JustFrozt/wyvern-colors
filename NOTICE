@@ -1,0 +1,7 @@
+The saddle and flute silhouettes and shade-region layouts were traced from the
+Wynncraft resource-pack icons. Wynncraft retains rights in its artwork.
+The mod contains native model geometry and a constant white shader sampler;
+it does not redistribute the Wynncraft resource pack. The Java implementation
+and model-generation script are licensed under the MIT License in LICENSE.
+This is an unofficial client mod and is not endorsed by Wynncraft or Mojang.
+The original Wyvern Colors monogram icon is covered by the project's MIT License.

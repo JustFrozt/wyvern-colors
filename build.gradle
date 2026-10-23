@@ -1,0 +1,84 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories {
+    mavenCentral()
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.terraformersmc.com/releases/' } }
+        filter { includeGroup 'com.terraformersmc' }
+    }
+    exclusiveContent {
+        forRepository {
+            ivy {
+                name = 'WynntilsRelease'
+                url = 'https://cdn.modrinth.com/data/dU5Gb9Ab/versions/'
+                patternLayout {
+                    artifact "[revision]/wynntils-${project.wynntils_version}-fabric+MC-${project.minecraft_version}(-[classifier]).[ext]"
+                }
+                metadataSources { artifact() }
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+def wynntilsDependency = "maven.modrinth:wynntils:${project.wynntils_version_id}"
+def modmenuDependency = "com.terraformersmc:modmenu:${project.modmenu_version}"
+
+sourceSets.main.java.srcDir 'src/common/java'
+
+// Every Minecraft port shares these classes. Keep their bytecode Java 17 compatible.
+def verifyCommonJava17 = tasks.register('verifyCommonJava17', JavaCompile) {
+    source = fileTree('src/common/java') { include '**/*.java' }
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/commonJava17')
+    javaCompiler = javaToolchains.compilerFor { languageVersion = JavaLanguageVersion.of(21) }
+    options.release = 17
+}
+tasks.named('check') { dependsOn verifyCommonJava17 }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // Optional integrations: pinned public artifacts, never bundled in the mod.
+    modCompileOnly wynntilsDependency
+    modCompileOnly modmenuDependency
+    if (!project.hasProperty('withoutWynntils')) {
+        modRuntimeOnly wynntilsDependency
+    }
+    if (!project.hasProperty('withoutModMenu')) {
+        modRuntimeOnly modmenuDependency
+    }
+    // Mod Menu needs these Fabric API modules in development launches.
+    if (!project.hasProperty('withoutModMenu')) {
+        modRuntimeOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}
+
+tasks.named('compileJava', JavaCompile) { options.release = 21 }
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from('LICENSE') { rename { "${it}_wyvern-colors" } }
+    from('NOTICE') { rename { "${it}_wyvern-colors" } }
+}

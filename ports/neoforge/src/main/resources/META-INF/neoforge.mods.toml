@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[10,)"
+license="MIT"
+
+[[mods]]
+modId="wyverncolors"
+version="${version}"
+displayName="Wyvern Colors"
+authors="JustFrozt"
+logoFile="assets/wyverncolors/icon.png"
+description='''Shows Wynncraft wyvern scale and horn colors on inventory reins and flutes.'''
+
+[[dependencies.wyverncolors]]
+modId="neoforge"
+type="required"
+versionRange="[21.11.48,21.12)"
+side="CLIENT"
+
+[[dependencies.wyverncolors]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.11]"
+side="CLIENT"
+
+[[mixins]]
+config="wyverncolors.mixins.json"
+[[mixins]]
+config="wyverncolors.wynntils.mixins.json"

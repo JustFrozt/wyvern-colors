@@ -1,0 +1,22 @@
+import javax.inject.Inject
+import net.fabricmc.loom.api.remapping.RemapperParameters
+import net.fabricmc.loom.extension.RemapperExtensionHolder
+import net.fabricmc.tinyremapper.TinyRemapper
+
+plugins { id 'dev.architectury.loom' version '1.14.476' }
+
+// Forge's login payload hierarchy aliases two SRG write methods. Match Loom's
+// Minecraft remapper policy for this mod, which uses neither network method.
+abstract class ForgeRemapper extends RemapperExtensionHolder {
+    @Inject ForgeRemapper() { super(RemapperParameters.None.INSTANCE) }
+
+    @Override void apply(TinyRemapper.Builder builder, String source, String target) {
+        builder.ignoreConflicts(true)
+    }
+}
+
+def remapper = objects.newInstance(ForgeRemapper)
+remapper.remapperExtensionClass.set(ForgeRemapper.name)
+loom.remapperExtensions.add(remapper)
+
+apply from: '../loaders/build.gradle'

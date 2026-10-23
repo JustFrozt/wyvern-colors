@@ -1,0 +1,2 @@
+plugins { id 'dev.architectury.loom' version '1.14.476' }
+apply from: '../loaders/build.gradle'
