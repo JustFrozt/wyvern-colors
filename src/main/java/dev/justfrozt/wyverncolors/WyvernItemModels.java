@@ -9,6 +9,8 @@ public final class WyvernItemModels {
     public enum Role { NONE, REINS, FLUTE }
     public static final Identifier REINS = Identifier.of("minecraft", "item/wynn/mount/wyvern_saddle");
     public static final Identifier FLUTE = Identifier.of("minecraft", "item/wynn/mount/wyvern_whistle");
+    private static final Identifier REINS_2_2_6 = Identifier.of("minecraft", "item/wynn/mount/saddle/wyvern");
+    private static final Identifier FLUTE_2_2_6 = Identifier.of("minecraft", "item/wynn/mount/whistle/wyvern");
     private WyvernItemModels() {}
 
     public static boolean supportsContext(ItemDisplayContext context) {
@@ -20,8 +22,8 @@ public final class WyvernItemModels {
     }
 
     public static Role roleOf(Identifier model) {
-        if (REINS.equals(model)) return Role.REINS;
-        if (FLUTE.equals(model)) return Role.FLUTE;
+        if (REINS.equals(model) || REINS_2_2_6.equals(model)) return Role.REINS;
+        if (FLUTE.equals(model) || FLUTE_2_2_6.equals(model)) return Role.FLUTE;
         return Role.NONE;
     }
 

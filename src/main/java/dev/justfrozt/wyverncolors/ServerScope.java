@@ -18,6 +18,8 @@ public final class ServerScope {
         int colon = host.indexOf(':');
         if (colon >= 0) host = host.substring(0, colon);
         if (host.endsWith(".")) host = host.substring(0, host.length() - 1);
-        return host.equals("wynncraft.com") || host.endsWith(".wynncraft.com");
+        return host.equals("wynncraft.com") || host.endsWith(".wynncraft.com")
+            || host.equals("wynncraft.net") || host.endsWith(".wynncraft.net")
+            || host.equals("wynncraft.org") || host.endsWith(".wynncraft.org");
     }
 }

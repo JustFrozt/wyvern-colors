@@ -1,4 +1,5 @@
 {
+  "message.wyverncolors.colorFallback.unsupportedModel": "[Wyvern Colors] %s Wynncraft's original icons are used for the affected items. If you encounter this message, please consider contacting the developer with latest.log attached to the message.",
   "config.wyverncolors.potentialFontSize.name": "Mount Potential Font Size (%%)",
   "config.wyverncolors.potentialFontSize.description": "Mount potential text size: 50–125%%. Default: 70%%. Long labels shrink to fit. Shared with Wynntils.",
   "config.wyverncolors.potentialAtBottom.name": "Mount Potential at Bottom",
@@ -33,6 +34,9 @@
   "message.wyverncolors.reason.model-assets": "Some custom mount icons could not be loaded.",
   "message.wyverncolors.reason.item-data": "Some mount color data could not be read.",
   "message.wyverncolors.reason.render": "A custom mount icon failed to render.",
+  "screen.wyverncolors.potential.source": "Potential display: %s",
+  "config.wyverncolors.potentialSource.description": "Use WynnToolZ while its potential display is on. Otherwise choose Wyvern Colors or Wynntils when installed.",
+  "config.wyverncolors.potentialFontSize.nativeDescription": "Mount potential text size: 50–125%%. Default: 70%%. Long labels shrink to fit.",
   "screen.wyverncolors.potential.opacity": "Potential opacity: %s%%",
   "config.wyverncolors.potentialOpacity.description": "Potential text and outline opacity: 0–100%%. Zero hides the label. Default: 100%%. Saved by Wyvern Colors; works with customization on or off."
 }

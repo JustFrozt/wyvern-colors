@@ -18,7 +18,7 @@ Open the settings through Mod Menu on Fabric, or through the Mods menu on Forge 
 
 You can swap the reins colors and adjust the mount potential text. The opacity slider goes from 0% to 100%; 0% hides the text, including its outline and shadow. Text size ranges from 50% to 125%, with six positions to choose from. The default is 70%, Top Left.
 
-Fabric's potential text controls use Wynntils. Forge has its own renderer. NeoForge uses Wynntils when installed and its own renderer otherwise. Debug logging is off by default and can be enabled for troubleshooting.
+Wyvern Colors draws mount potential from the tooltip. The number uses fixed color tiers, with animated crimson at 2,901–3,400 and full-spectrum Chroma at 3,401 and above. On Fabric, WynnToolZ takes over drawing when its potential overlay is enabled. On Fabric and NeoForge, the settings can switch the potential display to Wynntils. Debug logging is off by default.
 
 ## Building
 

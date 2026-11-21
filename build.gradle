@@ -30,7 +30,7 @@ repositories {
 def wynntilsDependency = "maven.modrinth:wynntils:${project.wynntils_version_id}"
 def modmenuDependency = "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-sourceSets.main.java.srcDir 'src/common/java'
+sourceSets.main.java.srcDirs 'src/common/java', 'src/fabric/java', 'ports/loaders/src/main/java'
 
 // Every Minecraft port shares these classes. Keep their bytecode Java 17 compatible.
 def verifyCommonJava17 = tasks.register('verifyCommonJava17', JavaCompile) {

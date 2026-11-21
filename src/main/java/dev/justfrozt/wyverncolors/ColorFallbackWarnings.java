@@ -34,8 +34,11 @@ public final class ColorFallbackWarnings {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.player == null) return;
         Text reason = Text.translatable("message.wyverncolors.reason." + pendingReason);
+        String messageKey = "unsupported-model".equals(pendingReason)
+            ? "message.wyverncolors.colorFallback.unsupportedModel"
+            : "message.wyverncolors.colorFallback";
         client.inGameHud.getChatHud().addMessage(
-            Text.translatable("message.wyverncolors.colorFallback", reason).formatted(Formatting.YELLOW));
+            Text.translatable(messageKey, reason).formatted(Formatting.YELLOW));
         notified = true;
         pendingReason = null;
     }

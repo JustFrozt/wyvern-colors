@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import org.slf4j.LoggerFactory;
 
-/** Native-loader fallback. A compatible Wynntils backend keeps ownership of its settings. */
+/** Saved settings for the built-in mount potential renderer. */
 public final class NativePotentialSettings implements PotentialSettings.Backend {
     private static NativePotentialSettings current;
     private final Path file;
@@ -27,12 +27,9 @@ public final class NativePotentialSettings implements PotentialSettings.Backend 
         this.size = size; this.position = position; this.override = override;
     }
 
-    public static void initialize(Path file, boolean wynntilsInstalled) {
-        current = null;
-        if (!wynntilsInstalled && PotentialSettings.backend() == null) {
-            current = load(file);
-            PotentialSettings.bind(current);
-        }
+    public static void initialize(Path file) {
+        current = load(file);
+        PotentialSettings.bind(current);
     }
 
     public static NativePotentialSettings active() {

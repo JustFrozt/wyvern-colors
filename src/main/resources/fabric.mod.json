@@ -20,7 +20,8 @@
   "license": "MIT",
   "mixins": [
     "wyverncolors.mixins.json",
-    "wyverncolors.wynntils.mixins.json"
+    "wyverncolors.fabric-potential.mixins.json",
+    "wyverncolors.potential-compat.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.18.6",
@@ -29,6 +30,7 @@
   },
   "suggests": {
     "modmenu": "*",
-    "wynntils": "*"
+    "wynntils": "*",
+    "wtz": "*"
   }
 }

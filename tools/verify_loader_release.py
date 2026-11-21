@@ -31,7 +31,8 @@ def main():
         assert dependencies['minecraft']['versionRange'] == '[1.21.11]'
         assert args.loader in dependencies
         assert all(item['side'] == 'CLIENT' for item in dependencies.values())
-        assert 'fabric.mod.json' not in names
+        assert {'fabric.mod.json', 'wyverncolors.fabric-potential.mixins.json',
+                'wyverncolors.potential-compat.mixins.json'}.isdisjoint(names)
         assert 'LICENSE_wyvern-colors' in names and 'NOTICE_wyvern-colors' in names
         assert 'JustFrozt' in jar.read('LICENSE_wyvern-colors').decode()
         assert metadata['license'] == 'MIT'
@@ -55,11 +56,17 @@ def main():
                 'wynntils.BitmapDigitInkMixin', 'wynntils.BakedGlyphRectAccessor'} <= set(mixins['client'])
         assert 'dev/justfrozt/wyverncolors/config/NativePotentialSettings.class' in names
         assert 'dev/justfrozt/wyverncolors/NativePotentialRenderer.class' in names
+        assert 'dev/justfrozt/wyverncolors/PotentialColors.class' in names
         assert {'ItemModelManagerMixin', 'BasicItemModelUnbakedMixin',
                 'CompositeItemModelAccessor', 'ColorResourceReloadMixin'} <= set(mixins['client'])
         if args.loader == 'neoforge':
             assert {item['config'] for item in metadata['mixins']} == {
                 'wyverncolors.mixins.json', 'wyverncolors.wynntils.mixins.json'}
+            optional = json.loads(jar.read('wyverncolors.wynntils.mixins.json'))
+            assert optional['package'] == 'dev.justfrozt.wyverncolors.mixin.optional'
+            assert set(optional['client']) == {'WynntilsPotentialSettingAccessor', 'WynntilsPotentialVisibilityMixin'}
+            for mixin in optional['client']:
+                assert f'dev/justfrozt/wyverncolors/mixin/optional/{mixin}.class' in names
             assert 'dev/justfrozt/wyverncolors/NeoForgeClient.class' in names
         else:
             assert b'screen.wyverncolors.potential.nativeConflict' in jar.read(

@@ -23,6 +23,21 @@ public final class WynntilsHooks {
 
     private WynntilsHooks() {}
 
+    public static boolean hasPotentialVisibilityHook(Reader reader) {
+        try {
+            ClassNode feature = reader.read(FEATURE);
+            ClassNode mount = reader.read(FEATURE + "$MountItemOverlay");
+            String stat = "com/wynntils/models/mount/type/ConfigMountStat";
+            field(feature, "mountItemStat", "L" + CONFIG + ";");
+            field(mount, "this$0", "L" + FEATURE + ";");
+            method(mount, "isTextOverlayEnabled", "()Z");
+            field(reader.read(stat), "POTENTIAL", "L" + stat + ";");
+            return true;
+        } catch (Exception | LinkageError unavailable) {
+            return false;
+        }
+    }
+
     public static Result inspect(Reader reader, String drawContext, String itemStack, String textRenderer) {
         try {
             ClassNode feature = reader.read(FEATURE);

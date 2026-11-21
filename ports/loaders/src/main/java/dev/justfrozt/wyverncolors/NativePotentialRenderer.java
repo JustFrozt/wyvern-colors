@@ -32,17 +32,9 @@ public final class NativePotentialRenderer {
         int opacity = WyvernSettings.current().potentialOpacityPercent();
         if (opacity == 0) return;
         try {
-            LoreComponent lore = stack.get(DataComponentTypes.LORE);
-            if (lore == null) return;
-            String name = stack.getName().getString();
-            Cached cached = CACHE.get(stack);
-            if (cached == null || cached.lore() != lore || !cached.name().equals(name)) {
-                cached = new Cached(lore, name, MountPotentialParser.parse(
-                    lore.lines().stream().map(Text::getString).toList(), name));
-                CACHE.put(stack, cached);
-            }
-            if (cached.potential().isEmpty()) return;
-            int potential = cached.potential().getAsInt();
+            OptionalInt parsed = potential(stack);
+            if (parsed.isEmpty()) return;
+            int potential = parsed.getAsInt();
             String label = Integer.toString(potential);
             Text text = Text.literal(label);
             Collector collector = new Collector();
@@ -50,7 +42,7 @@ public final class NativePotentialRenderer {
             if (collector.minX >= collector.maxX || collector.minY >= collector.maxY) return;
             TextInkBounds bounds = new TextInkBounds(collector.minX, collector.minY, collector.maxX, collector.maxY).outlined();
             MountLabelLayout layout = settings.overrideEnabled()
-                ? MountLabelLayout.potential(bounds, label, settings.fontSizePercent(), settings.position())
+                ? MountLabelLayout.calculate(bounds, 0.9f, settings.fontSizePercent(), settings.position())
                 : new MountLabelLayout(8 - font.getWidth(text) * .65f / 2, 2, .65f);
             if (settings.overrideEnabled()) {
                 RenderDiagnostics.potentialLayoutSelected(settings.fontSizePercent(), settings.position(), layout);
@@ -60,12 +52,14 @@ public final class NativePotentialRenderer {
             try {
                 matrices.translate(x + layout.x(), y + layout.y());
                 matrices.scale(layout.scale(), layout.scale());
+                int outlineColor = PotentialOpacity.apply(0xFF000000, opacity);
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dy = -1; dy <= 1; dy++) {
-                        if (Math.abs(dx) + Math.abs(dy) == 1) context.drawText(font, text, dx, dy, PotentialOpacity.apply(0xFF000000, opacity), false);
+                        if (dx == 0 && dy == 0) continue;
+                        context.drawText(font, text, dx, dy, outlineColor, false);
                     }
                 }
-                context.drawText(font, text, 0, 0, PotentialOpacity.apply(MountPotentialParser.color(potential), opacity), false);
+                context.drawText(font, text, 0, 0, PotentialOpacity.apply(PotentialColors.color(potential), opacity), false);
             } finally { matrices.popMatrix(); }
         } catch (RuntimeException failure) {
             if (!warned) {
@@ -74,6 +68,20 @@ public final class NativePotentialRenderer {
                     "[WyvernColors] Could not render native potential text", failure);
             }
         }
+    }
+
+    public static OptionalInt potential(ItemStack stack) {
+        LoreComponent lore = stack.get(DataComponentTypes.LORE);
+        if (lore == null) return OptionalInt.empty();
+
+        String name = stack.getName().getString();
+        Cached cached = CACHE.get(stack);
+        if (cached == null || cached.lore() != lore || !cached.name().equals(name)) {
+            cached = new Cached(lore, name, MountPotentialParser.parse(
+                lore.lines().stream().map(Text::getString).toList(), name));
+            CACHE.put(stack, cached);
+        }
+        return cached.potential();
     }
 
     private static final class Collector implements TextRenderer.GlyphDrawer {

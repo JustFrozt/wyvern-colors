@@ -1,5 +1,6 @@
 package dev.justfrozt.wyverncolors.config;
 
+import dev.justfrozt.wyverncolors.LoaderPlatform;
 import dev.justfrozt.wyverncolors.RenderDiagnostics;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -12,6 +13,7 @@ public final class WyvernSettingsScreen extends Screen {
     private final Screen parent;
     private SizeSlider size;
     private OpacitySlider opacity;
+    private ButtonWidget source;
     private ButtonWidget swap;
     private ButtonWidget debug;
     private ButtonWidget enabled;
@@ -30,6 +32,14 @@ public final class WyvernSettingsScreen extends Screen {
         controlsWidth = Math.min(300, Math.max(100, width - 24));
         int x = (width - controlsWidth) / 2;
         int y = controlsY = Math.max(50, height / 2 - 97);
+        if (LoaderPlatform.potentialSource() != null) {
+            source = addDrawableChild(ButtonWidget.builder(Text.empty(), button -> {
+                var settings = WyvernSettings.current();
+                showSaveResult(settings.setUseWynntilsPotential(!settings.useWynntilsPotential()));
+                refresh();
+            }).dimensions(x, 29, controlsWidth, 20).build());
+            source.setTooltip(Tooltip.of(Text.translatable("config.wyverncolors.potentialSource.description")));
+        }
         swap = addDrawableChild(ButtonWidget.builder(Text.empty(), button -> {
             showSaveResult(WyvernSettings.current().setSwapColors(!WyvernSettings.current().swapColors()));
             refresh();
@@ -44,23 +54,32 @@ public final class WyvernSettingsScreen extends Screen {
         debug.setTooltip(Tooltip.of(Text.translatable("config.wyverncolors.debugLogging.description")));
         enabled = addDrawableChild(ButtonWidget.builder(Text.empty(), button -> {
             var settings = PotentialSettings.backend();
-            if (settings != null) settings.setOverrideEnabled(!settings.overrideEnabled());
+            if (settings != null) {
+                settings.setOverrideEnabled(!settings.overrideEnabled());
+                showSaveResult(NativePotentialSettings.saveSucceeded());
+            }
             refresh();
         }).dimensions(x, y + 48, controlsWidth, 20).build());
         size = addDrawableChild(new SizeSlider(x, y + 72));
-        size.setTooltip(Tooltip.of(Text.translatable("config.wyverncolors.potentialFontSize.description")));
+        size.setTooltip(Tooltip.of(Text.translatable(NativePotentialSettings.fontDescriptionKey())));
         opacity = addDrawableChild(new OpacitySlider(x, y + 96));
         opacity.setTooltip(Tooltip.of(Text.translatable("config.wyverncolors.potentialOpacity.description")));
         placement = addDrawableChild(ButtonWidget.builder(Text.empty(), button -> {
             var settings = PotentialSettings.backend();
-            if (settings != null) settings.setPosition(settings.position().next());
+            if (settings != null) {
+                settings.setPosition(settings.position().next());
+                showSaveResult(NativePotentialSettings.saveSucceeded());
+            }
             refresh();
         }).dimensions(x, y + 120, controlsWidth, 20).build());
         reset = addDrawableChild(ButtonWidget.builder(Text.translatable("screen.wyverncolors.potential.reset"), button -> {
             var settings = PotentialSettings.backend();
             if (showSaveResult(WyvernSettings.current().resetDefaults())) {
                 RenderDiagnostics.settingsChanged();
-                if (settings != null) settings.resetDefaults();
+                if (settings != null) {
+                    settings.resetDefaults();
+                    showSaveResult(NativePotentialSettings.saveSucceeded());
+                }
             }
             refresh();
         }).dimensions(x, y + 148, (controlsWidth - 8) / 2, 20).build());
@@ -76,7 +95,19 @@ public final class WyvernSettingsScreen extends Screen {
 
     private void refresh() {
         var settings = PotentialSettings.backend();
-        boolean available = settings != null;
+        var currentSource = LoaderPlatform.potentialSource();
+        boolean nativeControls = currentSource == null || currentSource == PotentialSettings.Source.WYVERN_COLORS;
+        boolean available = settings != null && nativeControls;
+        if (source != null) {
+            source.active = LoaderPlatform.wynntilsPotentialAvailable()
+                && currentSource != PotentialSettings.Source.WYNNTOOLZ;
+            String provider = switch (currentSource) {
+                case WYVERN_COLORS -> "Wyvern Colors";
+                case WYNNTOOLZ -> "WynnToolZ";
+                case WYNNTILS -> "Wynntils";
+            };
+            source.setMessage(Text.translatable("screen.wyverncolors.potential.source", provider));
+        }
         boolean on = available && settings.overrideEnabled();
         enabled.active = available;
         reset.active = true;
@@ -98,9 +129,11 @@ public final class WyvernSettingsScreen extends Screen {
     @Override public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 20, 0xFFFFFFFF);
-        context.drawCenteredTextWithShadow(textRenderer, Text.translatable(PotentialSettings.available()
-            ? "screen.wyverncolors.potential.shared" : "screen.wyverncolors.potential.unavailable"),
-            width / 2, 37, 0xFFB0B0B0);
+        if (source == null) {
+            context.drawCenteredTextWithShadow(textRenderer, Text.translatable(PotentialSettings.available()
+                ? "screen.wyverncolors.potential.shared" : "screen.wyverncolors.potential.unavailable"),
+                width / 2, 37, 0xFFB0B0B0);
+        }
         var settings = PotentialSettings.backend();
         if (status == null && settings != null && !settings.potentialSelected()) {
             context.drawCenteredTextWithShadow(textRenderer,
@@ -125,7 +158,10 @@ public final class WyvernSettingsScreen extends Screen {
         }
         @Override protected void applyValue() {
             var settings = PotentialSettings.backend();
-            if (settings != null) settings.setFontSizePercent(percent());
+            if (settings != null) {
+                settings.setFontSizePercent(percent());
+                showSaveResult(NativePotentialSettings.saveSucceeded());
+            }
         }
     }
 

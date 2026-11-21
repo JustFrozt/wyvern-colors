@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "package": "dev.justfrozt.wyverncolors.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["NativePotentialOverlayMixin", "wynntils.BitmapDigitSelectionMixin",
+    "wynntils.BitmapDigitInkMixin", "wynntils.BakedGlyphRectAccessor"],
+  "injectors": { "defaultRequire": 1 }
+}

@@ -33,7 +33,7 @@ def main():
         authors = json.loads((root / 'src/main/resources/fabric.mod.json').read_text())['authors']
         if metadata['version'] != version or metadata.get('authors') != authors:
             raise ValueError('Unexpected release metadata')
-        for optional in ('wynntils', 'modmenu'):
+        for optional in ('wynntils', 'modmenu', 'wtz'):
             if optional in metadata['depends'] or optional not in metadata.get('suggests', {}):
                 raise ValueError(f'Incorrect optional dependency: {optional}')
         for name in ('LICENSE_wyvern-colors', 'NOTICE_wyvern-colors'):
@@ -59,7 +59,9 @@ def main():
                 raise ValueError(f'Unexpected Java bytecode: {name}')
         if any(name.endswith('.jar') for name in names):
             raise ValueError('Unexpected bundled dependency')
-        for name in ('dev/justfrozt/wyverncolors/config/WyvernSettings.class',
+        for name in ('dev/justfrozt/wyverncolors/PotentialColors.class',
+                     'dev/justfrozt/wyverncolors/NativePotentialRenderer.class',
+                     'dev/justfrozt/wyverncolors/config/WyvernSettings.class',
                      'dev/justfrozt/wyverncolors/config/WyvernSettingsScreen.class',
                      'dev/justfrozt/wyverncolors/GuiColorRenderer.class',
                      'dev/justfrozt/wyverncolors/ColorFallbackWarnings.class',

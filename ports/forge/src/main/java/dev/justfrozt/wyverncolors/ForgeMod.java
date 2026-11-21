@@ -19,8 +19,7 @@ public final class ForgeMod {
     private static final class Client {
         static void initialize(FMLJavaModLoadingContext context) {
             WyvernSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors.json"));
-            NativePotentialSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors-potential.json"),
-                !LoaderPlatform.version("wynntils").equals("not installed"));
+            NativePotentialSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors-potential.json"));
             context.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory(
                     (minecraft, parent) -> new WyvernSettingsScreen(parent)));

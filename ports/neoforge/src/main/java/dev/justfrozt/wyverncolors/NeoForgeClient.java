@@ -13,8 +13,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class NeoForgeClient {
     public NeoForgeClient(ModContainer container) {
         WyvernSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors.json"));
-        NativePotentialSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors-potential.json"),
-            !LoaderPlatform.version("wynntils").equals("not installed"));
+        NativePotentialSettings.initialize(FMLPaths.CONFIGDIR.get().resolve("wyverncolors-potential.json"));
         container.registerExtensionPoint(IConfigScreenFactory.class,
             (mod, parent) -> new WyvernSettingsScreen(parent));
         RenderDiagnostics.startup();

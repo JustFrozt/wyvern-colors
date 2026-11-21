@@ -1,6 +1,8 @@
 package dev.justfrozt.wyverncolors.mixin;
 
+import dev.justfrozt.wyverncolors.LoaderPlatform;
 import dev.justfrozt.wyverncolors.NativePotentialRenderer;
+import dev.justfrozt.wyverncolors.config.PotentialSettings;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.ItemStack;
@@ -15,6 +17,9 @@ public abstract class NativePotentialOverlayMixin {
         at = @At("RETURN"))
     private void wyverncolors$drawNativePotential(TextRenderer font, ItemStack stack,
             int x, int y, String count, CallbackInfo ci) {
-        NativePotentialRenderer.draw((DrawContext) (Object) this, font, stack, x, y);
+        var source = LoaderPlatform.potentialSource();
+        if (source == null || source == PotentialSettings.Source.WYVERN_COLORS) {
+            NativePotentialRenderer.draw((DrawContext) (Object) this, font, stack, x, y);
+        }
     }
 }

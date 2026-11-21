@@ -1,0 +1,9 @@
+{
+  "required": true,
+  "package": "dev.justfrozt.wyverncolors.mixin.optional",
+  "plugin": "dev.justfrozt.wyverncolors.compat.PotentialCompatPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["WynntilsPotentialSettingAccessor", "WynntilsPotentialVisibilityMixin", "WynnToolZPotentialMixin",
+    "WynnExtrasRenderContextMixin", "WynnExtrasMountColorMixin"],
+  "injectors": { "defaultRequire": 1 }
+}

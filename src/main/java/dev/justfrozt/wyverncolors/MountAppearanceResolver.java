@@ -20,7 +20,8 @@ public final class MountAppearanceResolver {
     private static final Pattern APPEARANCE_LINE = Pattern.compile(
         "^[\\p{L}]+ *[-\\u2010\\u2011\\u2012\\u2013\\u2014] *[\\p{L}]+$");
     private record Cached(LoreComponent lore, CustomModelDataComponent data,
-                          Optional<Appearance> appearance, boolean mountLore, String hint) {}
+                          Optional<Appearance> appearance, boolean mountLore, String hint,
+                          boolean merchantOffer) {}
     private MountAppearanceResolver() {}
 
     public static Optional<Appearance> resolve(ItemStack stack, WyvernItemModels.Role role) {
@@ -40,16 +41,31 @@ public final class MountAppearanceResolver {
                 .map(AppearanceParser::normalize)
                 .filter(line -> line.length() <= 96 && APPEARANCE_LINE.matcher(line).matches())
                 .limit(3).collect(java.util.stream.Collectors.joining(", "));
-            cached = new Cached(lore, data, appearance, mountLore, hint);
+            boolean merchantOffer = false;
+            if (appearance.isEmpty() && mountLore && hint.isEmpty()) {
+                List<String> details = lines.stream().skip(1).map(AppearanceParser::normalize).toList();
+                merchantOffer = details.contains("Price") && details.contains("Left-Click to Buy");
+            }
+            cached = new Cached(lore, data, appearance, mountLore, hint, merchantOffer);
             CACHE.put(stack, cached);
         }
         Status status = role != WyvernItemModels.Role.NONE
             ? (cached.appearance().isPresent() ? Status.SUPPORTED : Status.UNSUPPORTED_APPEARANCE)
             : (cached.appearance().isPresent() && cached.mountLore() ? Status.UNSUPPORTED_MODEL : Status.UNRELATED);
+        if (status == Status.UNSUPPORTED_APPEARANCE && (cached.merchantOffer()
+                || (role == WyvernItemModels.Role.FLUTE && !cached.mountLore() && hasInertFluteTitle(stack, lore)))) {
+            status = Status.UNRELATED;
+        }
         // This float is diagnostic information, never a classification rule.
         Float model = data == null ? null : data.getFloat(0);
         return new Resolution(status, model, cached.appearance(),
             status == Status.UNSUPPORTED_APPEARANCE ? cached.hint() : "");
+    }
+
+    private static boolean hasInertFluteTitle(ItemStack stack, LoreComponent lore) {
+        if ("Inert Flute".equals(AppearanceParser.normalize(stack.getName().getString()))) return true;
+        return lore != null && !lore.lines().isEmpty()
+            && "Inert Flute".equals(AppearanceParser.normalize(lore.lines().getFirst().getString()));
     }
 
     /** Only the private copy receives colors; no base item or numeric ID is assumed. */

@@ -63,7 +63,7 @@ public final class RenderDiagnostics {
                 String version = LoaderPlatform.version(id);
                 debug("{}={}", id, version);
             }
-            debug("Shared Wynntils potential-text settings available={}", PotentialSettings.available());
+            debug("Potential-text settings available={}", PotentialSettings.available());
         }
     }
 

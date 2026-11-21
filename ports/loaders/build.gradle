@@ -44,20 +44,19 @@ def generateSharedJava = tasks.register('generateSharedJava', Sync) {
                 !standalone.any { path.endsWith('/' + it) }
         }
     }
+    if (neo) {
+        from(new File(sourceRoot, 'src/fabric/java')) {
+            include '**/WynntilsPotentialSettingAccessor.java', '**/WynntilsPotentialVisibilityMixin.java'
+        }
+    }
     from(new File(sourceRoot, 'src/common/java'))
     into sharedJava
     filter { String line ->
         def nativeSettings = 'dev.justfrozt.wyverncolors.config.NativePotentialSettings'
-        def updated = line.replace('"fabricloader", "wynntils", "modmenu"', "\"${platform}\", \"wynntils\"")
+        line.replace('"fabricloader", "wynntils", "modmenu"', "\"${platform}\", \"wynntils\"")
             .replace('"screen.wyverncolors.potential.shared"', "${nativeSettings}.statusKey()")
             .replace('"screen.wyverncolors.potential.unavailable"', neo
                 ? '"screen.wyverncolors.potential.unavailable"' : '"screen.wyverncolors.potential.nativeConflict"')
-            .replace('"config.wyverncolors.potentialFontSize.description"', "${nativeSettings}.fontDescriptionKey()")
-        if (updated.contains('if (settings != null) settings.set') ||
-                updated.contains('if (settings != null) settings.resetDefaults();')) {
-            updated += " showSaveResult(${nativeSettings}.saveSucceeded());"
-        }
-        updated.replace('Shared Wynntils potential-text settings attached', 'Potential-text settings attached')
     }
 }
 
@@ -67,7 +66,7 @@ sourceSets {
         java.srcDir('../loaders/src/main/java')
         if (neo) java.srcDir('../loaders/src/neoforge/java')
         resources.srcDir(new File(sourceRoot, 'src/main/resources'))
-        resources.exclude 'fabric.mod.json'
+        resources.exclude 'fabric.mod.json', 'wyverncolors.fabric-potential.mixins.json', 'wyverncolors.potential-compat.mixins.json'
         if (!neo) resources.exclude 'wyverncolors.wynntils.mixins.json'
     }
 }
@@ -113,7 +112,8 @@ processResources {
         if (neo) {
             def optionalFile = new File(destinationDir, 'wyverncolors.wynntils.mixins.json')
             def optional = new groovy.json.JsonSlurper().parse(optionalFile)
-            optional.client -= ['BitmapDigitSelectionMixin', 'BitmapDigitInkMixin', 'BakedGlyphRectAccessor']
+            optional.package = 'dev.justfrozt.wyverncolors.mixin.optional'
+            optional.client = ['WynntilsPotentialSettingAccessor', 'WynntilsPotentialVisibilityMixin']
             optionalFile.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(optional)) + '\n'
         }
         def languageFile = new File(destinationDir, 'assets/wyverncolors/lang/en_us.json')
